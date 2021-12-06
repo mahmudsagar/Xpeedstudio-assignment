@@ -1,0 +1,6 @@
+/server/node_modules
+/frontend/node_modules
+
+/server/package-lock.json
+/frontend/package-lock.json
+/server/.env
