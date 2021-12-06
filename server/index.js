@@ -25,15 +25,6 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 // let collection
 
-// http.listen(port, async () => {
-//     try {
-//         await client.connect();
-//         collection = client.db("calculator").collection("calculation");
-//         console.log("Listening on port :%s...", http.address().port);
-//     } catch (e) {
-//         console.error(e);
-//     }
-// });
 
 
 // app.get("/results", async (request, response) => {
@@ -47,11 +38,11 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 async function run() {
     try {
         await client.connect();
-        const db = client.db('genius-calculator');
-        const resultsCollection = db.collection('results');
+        const db = client.db('calculator');
+        const resultsCollection = db.collection('calculations');
 
 
-        app.get('/results', async (req, res) => {
+        app.get('/calculations', async (req, res) => {
             const cursor = resultsCollection.find({});
             const results = await cursor.toArray();
             res.send(results[0]);
@@ -110,4 +101,18 @@ async function run() {
     } finally {
         //
     }
+}
+run().catch(console.dir)
+
+app.get('/', (req, res) => {
+    res.send('running app')
+});
+
+http.listen(port, () => {
+    console.log(`listening on *:${port}`);
+});
+
+function calculateInput(fn) {
+    // return new Function('return ' + fn)();
+    return eval(fn)
 }

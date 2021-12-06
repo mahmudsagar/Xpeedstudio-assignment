@@ -1,0 +1,54 @@
+.screen-container {
+    width: 400px;
+    height: 600px;
+    background-color: gainsboro;
+}
+
+.screens {
+    transform: scale(0.9);
+}
+
+.results-container {
+    overflow-y: auto;
+}
+.results-container::-webkit-scrollbar {
+    width: 5px;
+}
+
+.results-container::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+.results-container::-webkit-scrollbar-thumb {
+    background-color: darkgrey;
+    outline: 1px solid slategrey;
+}
+.results-container.screen-a {
+    height: 50%;
+    border-bottom: 1px solid;
+}
+
+.results-container.screen-b {
+    height: 100%;
+}
+
+.result {
+    border: 2px solid;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.result button {
+    background-color: rgba(65, 62, 62, 0.815);
+    color: white;
+}
+
+.result button:hover {
+    background-color: rgb(65, 62, 62);
+    color: white;
+}
+
+.inputs button {
+    border: 1px solid;
+    background: transparent;
+}
