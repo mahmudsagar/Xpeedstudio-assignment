@@ -1,16 +1,44 @@
-import React from 'react';
+import {
+    Dialog,
+    DialogTitle,
+    Divider,
+    Grid,
+    Typography, 
+} from "@mui/material";
+import React from "react";
 // import { Modal } from 'react-bootstrap';
 
-const ShowInput = ({ show, handleClose, content }) => {
+const ShowInput = ({ onClose, open, content }) => {
 
+    const handleClose = () => {
+        onClose(content);
+    };
+    const handleListItemClick = (value) => {
+        onClose(value);
+    };
     return (
-        <p>hello</p>
-        // <Modal show={show} onHide={handleClose}>
-        //     <Modal.Header closeButton>
-        //         <Modal.Title>Input Content</Modal.Title>
-        //     </Modal.Header>
-        //     <Modal.Body className="text-center fw-bold fs-5">{content}</Modal.Body>
-        // </Modal>
+        <>
+            <Dialog onClose={handleClose} open={open}>
+                <Grid container>
+                    <Grid item xs={8}>
+                        <DialogTitle>Input</DialogTitle>
+                    </Grid>
+                    <Grid item xs={4}>
+                        <Typography
+                            component="span"
+                            sx={{cursor: "pointer"}}
+                            onClick={() => handleListItemClick(content)}
+                        >
+                            X
+                        </Typography>
+                    </Grid>
+                </Grid>
+                <Divider />
+                <Typography sx={{ py: 2, textAlign: "center" }}>
+                    {content}
+                </Typography>
+            </Dialog>
+        </>
     );
 };
 

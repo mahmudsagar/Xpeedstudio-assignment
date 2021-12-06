@@ -1,27 +1,18 @@
 import "../Screen.css";
 import React, { useEffect, useState } from "react";
-import InfiniteScroll from "react-infinite-scroll-component";
-import ScreenA from "../ScreenA/ScreenA";
 import ShowInput from "../ShowInput/ShowInput";
 import socketIOClient from "socket.io-client";
-// import ProgressModal from "./ProgressModal/ProgressModal";
-import { useLocation } from "react-router";
 import { Link } from "react-router-dom";
-import { Button, Grid, Paper, Typography } from "@mui/material";
+import { Button, Grid, LinearProgress, Paper, Typography } from "@mui/material";
 import { AiOutlineArrowLeft } from "react-icons/ai";
+import { Box } from "@mui/system";
 const ENDPOINT = "http://localhost:5000";
 
 const ScreenB = () => {
-    const [hasMore, sethasMore] = useState(true);
-    const [page, setPage] = useState(7);
-    const [data, setData] = useState([]);
     let socket = socketIOClient(ENDPOINT);
     const [results, setResults] = useState([]);
-    const [show, setShow] = useState(false);
-    const [updating, setUpdating] = useState(false);
-    const [content, setContent] = useState("");
-    const handleClose = () => setShow(false);
-    const handleShow = () => setShow(true);
+    const [open, setOpen] = React.useState(false);
+    const [listContent, setListContent] = useState("");
 
     const [processing, setProcessing] = useState(false);
 
@@ -29,7 +20,7 @@ const ScreenB = () => {
         socket.on("connection", () => {
             console.log("Connected...");
 
-            fetch("http://localhost:5000/results")
+            fetch("http://localhost:5000/calculations")
                 .then((res) => res.json())
                 .then((data) => {
                     setResults(data.allResults);
@@ -45,24 +36,17 @@ const ScreenB = () => {
 
         socket.on("allResults", (data) => {
             setResults(data[0].allResults);
-            setUpdating(false);
         });
     }, []);
 
-    useEffect(() => {
-        if (results.length > 6) setData([...results.slice(0, page)]);
-        else setData(results);
-        if (page === results.length) {
-            sethasMore(false);
-            return;
-        } else sethasMore(true);
-    }, [results, page]);
-
-    const showInput = (inputContent) => {
-        setContent(inputContent);
-        handleShow();
+    const handleClickOpen = (data) => {
+        setOpen(true);
+        setListContent(data);
     };
-    const nextData = () => setPage(page + 1);
+    const handleClose = (value) => {
+        setOpen(false);
+        setListContent(value);
+    };
 
     return (
         <>
@@ -94,31 +78,33 @@ const ScreenB = () => {
                         >
                             Screen B
                         </Typography>
-                        <Button
-                            variant="outlined"
-                            sx={{
-                                color: "#fff",
-                                borderRadius: 4,
-                                borderColor: "white",
+                        <Link
+                            to="/"
+                            style={{
+                                textDecoration: "none",
+                                textTransform: "uppercase",
+                                color: "white",
                             }}
                         >
-                            <Link
-                                to="/"
-                                style={{
-                                    textDecoration: "none",
-                                    textTransform: "uppercase",
-                                    color: "white"
+                            <Button
+                                variant="outlined"
+                                sx={{
+                                    color: "#fff",
+                                    borderRadius: 4,
+                                    borderColor: "white",
                                 }}
                             >
                                 <AiOutlineArrowLeft /> Open Screen A
-                            </Link>
-                        </Button>
+                            </Button>
+                        </Link>
                     </Grid>
-                    <InfiniteScroll
+
+                    {processing && <LinearProgress />}
+                    {/* <InfiniteScroll
                         dataLength={data.length}
                         next={nextData}
                         hasMore={hasMore}
-                        height={600}
+                        height={400}
                         loader={<h4>Loading...</h4>}
                         endMessage={
                             <p style={{ textAlign: "center" }}>
@@ -126,7 +112,8 @@ const ScreenB = () => {
                             </p>
                         }
                         className="results-container screen-b"
-                    >
+                    > */}
+                    <Box sx={{maxHeight: "500px",overflow: "auto"}} className="results-container screen-b">
                         <Typography
                             component="h5"
                             sx={{
@@ -145,31 +132,65 @@ const ScreenB = () => {
                                 {results.length}
                             </Typography>{" "}
                         </Typography>
-
                         <div className="results mt-3">
-                            {data.map((result, index) => (
-                                <div
-                                    key={`key-${index}`}
-                                    className="result mb-3 d-flex align-items-center justify-content-between"
+                            {results.map((result, index) => (
+                                <Box
+                                    className="result"
+                                    key={index}
+                                    sx={{
+                                        mb: 1,
+                                        px: 2,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "space-between",
+                                    }}
                                 >
-                                    <div className="d-flex align-items-center">
-                                        <span>= {result.result}</span>
-                                        <h6 className="mb-0 ms-3">
+                                    <Box
+                                        sx={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                        }}
+                                    >
+                                        <Typography component="span">
+                                            = {result.result}
+                                        </Typography>
+                                        <Typography
+                                            component="strong"
+                                            sx={{
+                                                mb: 0,
+                                                ml: 3,
+                                                fontWeight: 500,
+                                                textTransform: "capitalize",
+                                            }}
+                                        >
                                             {result.title}
-                                        </h6>
-                                    </div>
-                                    <button
-                                        className="btn rounded-pill px-4"
-                                        onClick={() => showInput(result.input)}
+                                        </Typography>
+                                    </Box>
+                                    <Button
+                                        variant="contained"
+                                        sx={{
+                                            px: 4,
+                                            borderRadius: 4,
+                                            bgcolor: "greenyellow",
+                                        }}
+                                        onClick={() =>
+                                            handleClickOpen(result.input)
+                                        }
                                     >
                                         See Input
-                                    </button>
-                                </div>
+                                    </Button>
+                                </Box>
                             ))}
                         </div>
-                    </InfiniteScroll>
+                    {/* </InfiniteScroll> */}
+                    </Box>
                 </Paper>
             </Grid>
+            <ShowInput
+                content={listContent}
+                open={open}
+                onClose={handleClose}
+            />
         </>
     );
 };

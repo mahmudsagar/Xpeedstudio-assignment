@@ -1,7 +1,5 @@
 .screen-container {
-    width: 400px;
-    height: 600px;
-    background-color: gainsboro;
+    width: 500px;
 }
 
 .screens {
@@ -24,7 +22,7 @@
     outline: 1px solid slategrey;
 }
 .results-container.screen-a {
-    height: 50%;
+    max-height: 300px;
     border-bottom: 1px solid;
 }
 
@@ -39,8 +37,7 @@
 }
 
 .result button {
-    background-color: rgba(65, 62, 62, 0.815);
-    color: white;
+    color: black;
 }
 
 .result button:hover {

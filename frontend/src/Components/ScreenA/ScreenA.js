@@ -2,34 +2,39 @@ import "../Screen.css";
 import React, { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { AiFillFileText } from "react-icons/ai";
-import swal from "sweetalert";
 
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { Grid, Paper, TextField } from "@mui/material";
+import {
+    Alert,
+    AlertTitle,
+    Grid,
+    LinearProgress,
+    Paper,
+    TextField,
+} from "@mui/material";
 import { Box } from "@mui/system";
 import { Typography } from "@mui/material";
 import { Button } from "@mui/material";
 import { Link } from "react-router-dom";
 import { AiOutlineArrowRight } from "react-icons/ai";
+import ShowInput from "./../ShowInput/ShowInput";
 
 const ScreenA = ({
     results,
     setResults,
-    setContent,
-    handleShow,
     socket,
     processing,
     setProcessing,
-    setUpdating,
 }) => {
     const { acceptedFiles, getRootProps, getInputProps } = useDropzone();
     const [calcTitle, setCalcTitle] = useState("");
     const [fileContent, setFileContent] = useState("");
     const [fileName, setFileName] = useState("");
-
-    useEffect(() => {
-        if (acceptedFiles[0]) handleFileChosen(acceptedFiles[0]);
-    }, [acceptedFiles]);
+    const [emptyError, setEmptyError] = useState(false);
+    const [invalidError, setInvalidError] = useState(false);
+    const [invalidExpressionError, setInvalidExpressionError] = useState(false);
+    const [open, setOpen] = React.useState(false);
+    const [listContent, setListContent] = useState("");
 
     function calculateInput(fn) {
         return new Function("return " + fn)();
@@ -39,10 +44,7 @@ const ScreenA = ({
         e.preventDefault();
 
         if (fileContent === "") {
-            swal({
-                title: "File Not Found!",
-                text: "Upload/Drop a valid .txt file.",
-            });
+            setEmptyError(true);
         } else {
             if (
                 /[^0-9-+*/.]/.test(fileContent) ||
@@ -50,11 +52,7 @@ const ScreenA = ({
                     fileContent
                 )
             ) {
-                swal({
-                    title: "Invalid File!",
-                    text: "Choose a valid .txt file. Allowed Characters: [0-9, +, -, *, /]",
-                    icon: "error",
-                });
+                setInvalidError(true);
             } else {
                 try {
                     calculateInput(fileContent);
@@ -67,10 +65,7 @@ const ScreenA = ({
                     setFileName("");
                     setFileContent("");
                 } catch {
-                    swal({
-                        title: "Invalid Expression!",
-                        text: "Upload/Drop a .txt file with valid expression.",
-                    });
+                    setInvalidExpressionError(true);
                 }
             }
         }
@@ -91,8 +86,6 @@ const ScreenA = ({
 
     function handleOnDragEnd(result) {
         if (!result.destination) return;
-
-        setUpdating(true);
         const items = Array.from(results);
         const [reorderedItem] = items.splice(result.source.index, 1);
         items.splice(result.destination.index, 0, reorderedItem);
@@ -101,40 +94,40 @@ const ScreenA = ({
         //update db collection for every reordering
         socket.emit("updateResults", { results: items });
     }
-    const showInput = (inputContent) => {
-        setContent(inputContent);
-        handleShow();
+    const handleClickOpen = (data) => {
+        setOpen(true);
+        setListContent(data);
     };
+    const handleClose = (value) => {
+        setOpen(false);
+        setListContent(value);
+    };
+    useEffect(() => {
+        if (acceptedFiles[0]) handleFileChosen(acceptedFiles[0]);
+    }, [acceptedFiles]);
 
     return (
-        <Paper
-            elevation={8}
-            className="screen-container"
-            sx={{ bgcolor: "#E1E2E1" }}
-        >
-            <Grid
-                container
-                sx={{
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    bgcolor: "#000063",
-                    p: 1,
-                }}
+        <>
+            <Paper
+                elevation={8}
+                className="screen-container"
+                sx={{ bgcolor: "#E1E2E1" }}
             >
-                <Typography
-                    component="h4"
-                    sx={{ fontWeight: 600, color: "#fff" }}
-                >
-                    Screen A
-                </Typography>
-                <Button
-                    variant="outlined"
+                <Grid
+                    container
                     sx={{
-                        color: "#fff",
-                        borderRadius: 4,
-                        borderColor: "white",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        bgcolor: "#000063",
+                        p: 1,
                     }}
                 >
+                    <Typography
+                        component="h4"
+                        sx={{ fontWeight: 600, color: "#fff" }}
+                    >
+                        Screen A
+                    </Typography>
                     <Link
                         to="/screenB"
                         style={{
@@ -143,143 +136,232 @@ const ScreenA = ({
                             color: "#fff",
                         }}
                     >
-                        Open Screen B <AiOutlineArrowRight />
-                    </Link>
-                </Button>
-            </Grid>
-            <Box sx={{ pb: 2 }} className="results-container screen-a">
-                <Typography
-                    component="h5"
-                    sx={{
-                        fontWeight: 600,
-                        bgcolor: "#311b92",
-                        color: "white",
-                        py: 2,
-                        pl: 1,
-                    }}
-                >
-                    Total Results:{" "}
-                    <Typography
-                        component="span"
-                        sx={{ color: "#5bbc2e", fontWeight: 600 }}
-                    >
-                        {results.length}
-                    </Typography>{" "}
-                </Typography>
-                <Box sx={{ mt: 3 }} className="results">
-                    <DragDropContext onDragEnd={handleOnDragEnd}>
-                        <Droppable droppableId="characters">
-                            {(provided) => (
-                                <div
-                                    className="characters"
-                                    {...provided.droppableProps}
-                                    ref={provided.innerRef}
-                                >
-                                    {provided.placeholder}
-                                    {results.map((result, index) => (
-                                        <Draggable
-                                            key={index + 1}
-                                            draggableId={`${index}-1`}
-                                            index={index}
-                                        >
-                                            {(provided) => (
-                                                <Box
-                                                    {...provided.draggableProps}
-                                                    {...provided.dragHandleProps}
-                                                    ref={provided.innerRef}
-                                                    className="result mb-3 px-2 d-flex align-items-center justify-content-between"
-                                                >
-                                                    <Box className="d-flex align-items-center">
-                                                        <span>
-                                                            = {result.result}
-                                                        </span>
-                                                        <h6 className="mb-0 ms-3">
-                                                            {result.title}
-                                                        </h6>
-                                                    </Box>
-                                                    <button
-                                                        className="btn rounded-pill px-4"
-                                                        onClick={() =>
-                                                            showInput(
-                                                                result.input
-                                                            )
-                                                        }
-                                                    >
-                                                        See Input
-                                                    </button>
-                                                </Box>
-                                            )}
-                                        </Draggable>
-                                    ))}
-                                </div>
-                            )}
-                        </Droppable>
-                    </DragDropContext>
-                </Box>
-            </Box>
-            <Box className="input-container" sx={{ p: 2 }}>
-                <Typography
-                    component="h5"
-                    sx={{ fontWeight: 600, fontSize: "1.3rem" }}
-                >
-                    Input
-                </Typography>
-                <Box>
-                    <form onSubmit={handleSubmission}>
-                        <TextField
-                            fullWidth
-                            type="text"
-                            label="Calculation Title"
-                            onChange={(e) => setCalcTitle(e.target.value)}
-                            required
-                            sx={{ mb: 2 }}
-                            placeholder="Calculation Title"
-                        />
-
-                        <Box
-                            {...getRootProps({ className: "dropzone" })}
-                            sx={{ border: 1, borderRadius: 1 }}
+                        <Button
+                            variant="outlined"
+                            sx={{
+                                color: "#fff",
+                                borderRadius: 4,
+                                borderColor: "white",
+                            }}
                         >
-                            <input
-                                {...getInputProps()}
-                                accept=".txt"
-                                onChange={(e) =>
-                                    handleFileChosen(e.target.files[0])
-                                }
-                            />
-                            {fileName === "" ? (
-                                <Typography sx={{ textAlign: "center" }}>
-                                    <AiFillFileText />
-                                    <br />
-                                    Upload Or Drop your text file here
-                                </Typography>
-                            ) : (
-                                <ul>{fileName}</ul>
-                            )}
-                        </Box>
-                        {processing ? (
-                            <Typography component="div" sx={{ my: 2 }}>
-                                {" "}
-                                Please Wait 15s. <strong>Calculating...</strong>
-                            </Typography>
-                        ) : (
-                            <Button
-                                variant="outlined"
-                                type="submit"
-                                sx={{
-                                    my: 2,
-                                    borderRadius: 4,
-                                    color: "black",
-                                    borderColor: "black",
-                                }}
-                            >
-                                Calculate
-                            </Button>
-                        )}
-                    </form>
+                            Open Screen B <AiOutlineArrowRight />
+                        </Button>
+                    </Link>
+                </Grid>
+                <Box sx={{ pb: 2 }} className="results-container screen-a">
+                    <Typography
+                        component="h5"
+                        sx={{
+                            fontWeight: 600,
+                            bgcolor: "#311b92",
+                            color: "white",
+                            py: 2,
+                            pl: 1,
+                        }}
+                    >
+                        Total Results:{" "}
+                        <Typography
+                            component="span"
+                            sx={{ color: "#5bbc2e", fontWeight: 600 }}
+                        >
+                            {results.length}
+                        </Typography>{" "}
+                    </Typography>
+                    <Box sx={{ mt: 3 }} className="results">
+                        <DragDropContext onDragEnd={handleOnDragEnd}>
+                            <Droppable droppableId="characters">
+                                {(provided) => (
+                                    <Box
+                                        className="characters"
+                                        {...provided.droppableProps}
+                                        ref={provided.innerRef}
+                                    >
+                                        {provided.placeholder}
+                                        {results.map((result, index) => (
+                                            <Draggable
+                                                key={index + 1}
+                                                draggableId={`${index}-1`}
+                                                index={index}
+                                            >
+                                                {(provided) => (
+                                                    <Box
+                                                        {...provided.draggableProps}
+                                                        {...provided.dragHandleProps}
+                                                        ref={provided.innerRef}
+                                                        className="result"
+                                                        sx={{
+                                                            mb: 1,
+                                                            px: 2,
+                                                            display: "flex",
+                                                            alignItems:
+                                                                "center",
+                                                            justifyContent:
+                                                                "space-between",
+                                                        }}
+                                                    >
+                                                        <Box
+                                                            sx={{
+                                                                display: "flex",
+                                                                alignItems:
+                                                                    "center",
+                                                            }}
+                                                        >
+                                                            <Typography component="span">
+                                                                ={" "}
+                                                                {result.result}
+                                                            </Typography>
+                                                            <Typography
+                                                                component="strong"
+                                                                sx={{
+                                                                    mb: 0,
+                                                                    ml: 3,
+                                                                    fontWeight: 500,
+                                                                    textTransform:
+                                                                        "capitalize",
+                                                                }}
+                                                            >
+                                                                {result.title}
+                                                            </Typography>
+                                                        </Box>
+                                                        <Button
+                                                            variant="contained"
+                                                            sx={{
+                                                                px: 4,
+                                                                borderRadius: 4,
+                                                                bgcolor:
+                                                                    "greenyellow",
+                                                            }}
+                                                            onClick={() =>
+                                                                handleClickOpen(
+                                                                    result.input
+                                                                )
+                                                            }
+                                                        >
+                                                            See Input
+                                                        </Button>
+                                                    </Box>
+                                                )}
+                                            </Draggable>
+                                        ))}
+                                    </Box>
+                                )}
+                            </Droppable>
+                        </DragDropContext>
+                    </Box>
                 </Box>
-            </Box>
-        </Paper>
+                <Box className="input-container" sx={{ p: 2 }}>
+                    <Typography
+                        component="h5"
+                        sx={{ fontWeight: 600, fontSize: "1.3rem", mb: 2 }}
+                    >
+                        Input
+                    </Typography>
+                    <Box>
+                        <form onSubmit={handleSubmission}>
+                            <TextField
+                                fullWidth
+                                type="text"
+                                label="Title"
+                                onChange={(e) => setCalcTitle(e.target.value)}
+                                required
+                                sx={{ mb: 2 }}
+                                placeholder="Calculation Title"
+                            />
+
+                            <Box
+                                {...getRootProps({ className: "dropzone" })}
+                                sx={{ border: 1, borderRadius: 1, mb: 2 }}
+                            >
+                                <input
+                                    {...getInputProps()}
+                                    accept=".txt"
+                                    onChange={(e) =>
+                                        handleFileChosen(e.target.files[0])
+                                    }
+                                />
+                                {fileName === "" ? (
+                                    <Typography sx={{ textAlign: "center" }}>
+                                        <AiFillFileText />
+                                        <br />
+                                        Upload Or Drop your text file here
+                                    </Typography>
+                                ) : (
+                                    <ul>{fileName}</ul>
+                                )}
+                            </Box>
+
+                            {emptyError ? (
+                                <Alert
+                                    onClose={() => {
+                                        setEmptyError(false);
+                                    }}
+                                    severity="error"
+                                >
+                                    <AlertTitle>File Not Found!</AlertTitle>
+                                    Upload/Drop a valid{" "}
+                                    <strong>.txt file.</strong>
+                                </Alert>
+                            ) : invalidError ? (
+                                <Alert
+                                    onClose={() => {
+                                        setInvalidError(false);
+                                    }}
+                                    severity="error"
+                                >
+                                    <AlertTitle>Invalid File!</AlertTitle>
+                                    Choose a valid .txt file{" "}
+                                    <strong>
+                                        Allowed Characters: [0-9, +, -, *, /]"
+                                    </strong>
+                                </Alert>
+                            ) : (
+                                invalidExpressionError && (
+                                    <Alert
+                                        onClose={() => {
+                                            setInvalidExpressionError(false);
+                                        }}
+                                        severity="error"
+                                    >
+                                        <AlertTitle>
+                                            Invalid Expression!
+                                        </AlertTitle>
+                                        Choose a valid .txt file
+                                    </Alert>
+                                )
+                            )}
+                            {processing ? (
+                                <>
+                                    <LinearProgress />
+                                    <Typography component="div" sx={{ my: 2 }}>
+                                        {" "}
+                                        Please Wait 15s.{" "}
+                                        <strong>Calculating...</strong>
+                                    </Typography>
+                                </>
+                            ) : (
+                                <Button
+                                    variant="outlined"
+                                    type="submit"
+                                    sx={{
+                                        my: 2,
+                                        borderRadius: 4,
+                                        color: "black",
+                                        borderColor: "black",
+                                    }}
+                                >
+                                    Calculate
+                                </Button>
+                            )}
+                        </form>
+                    </Box>
+                </Box>
+            </Paper>
+            <ShowInput
+                content={listContent}
+                open={open}
+                onClose={handleClose}
+            />
+        </>
     );
 };
 
