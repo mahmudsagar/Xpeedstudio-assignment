@@ -36,10 +36,6 @@ const ScreenA = ({
     const [open, setOpen] = React.useState(false);
     const [listContent, setListContent] = useState("");
 
-    function calculateInput(fn) {
-        return new Function("return " + fn)();
-    }
-
     const handleSubmission = (e) => {
         e.preventDefault();
 
@@ -54,19 +50,14 @@ const ScreenA = ({
             ) {
                 setInvalidError(true);
             } else {
-                try {
-                    calculateInput(fileContent);
-                    setProcessing(true);
-                    socket.emit("calculate", {
-                        title: calcTitle,
-                        input: fileContent,
-                    });
-                    e.target.reset();
-                    setFileName("");
-                    setFileContent("");
-                } catch {
-                    setInvalidExpressionError(true);
-                }
+                socket.emit("calculate", {
+                    title: calcTitle,
+                    input: fileContent,
+                });
+                setProcessing(true);
+                e.target.reset();
+                setFileName("");
+                setFileContent("");
             }
         }
     };

@@ -1,28 +1,22 @@
-# Getting Started with Genius Calculator
+# Getting Started with calculator assignment
 
-https://genius-calculator.netlify.app/
-
+## Frontend Link: `https://optimistic-williams-ab996c.netlify.app/`
+## Backend Link: `https://dunamic-calculations.herokuapp.com/calculations`
+ 
+## Technology Used
+#### Front End: `React JS`
+#### Front End Host: `Netlify`
+#### Client Side: `Node Js`
+#### Client Side Host: `Heroku`
+#### Client Side Framework: `Express Js`
+#### Database: `Mongodb`
 ## Commands to run
-### Clone Server
-```commandline
-git clone https://github.com/nahidsalekin/genius-calculator-server.git
-```
-```commandline
-cd genius-calculator-server
-```
-```commandline
-npm install
-```
-```commandline
-npm start
-```
-
 ### Clone Client
 ```commandline
-git clone https://github.com/nahidsalekin/genius-calculator.git
+git clone https://github.com/mahmudsagar/xpeedstudio-assignment-frontend
 ```
 ```commandline
-cd genius-calculator
+cd xpeedstudio-assignment-frontend
 ```
 ```commandline
 npm install
@@ -30,6 +24,22 @@ npm install
 ```commandline
 npm start
 ```
+```commandline
+npm run build
+```
+
+### Clone Server
+```commandline
+https://github.com/mahmudsagar/xpeedstudio-assignment-server
+```
+```commandline
+cd xpeedstudio-assignment-server
+```
+```commandline
+npm install
+```
+```commandline
+npm start
 
 
 Runs the app in the development mode.\

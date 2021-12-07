@@ -20,7 +20,7 @@ const ScreenB = () => {
         socket.on("connection", () => {
             console.log("Connected...");
 
-            fetch("http://localhost:5000/calculations")
+            fetch("https://dunamic-calculations.herokuapp.com/calculations")
                 .then((res) => res.json())
                 .then((data) => {
                     setResults(data.allResults);
@@ -29,7 +29,7 @@ const ScreenB = () => {
 
         socket.on("result", (data) => {
             if (data.status === "ok") {
-                setResults((results) => [...results, data.result]);
+                setResults((results) => [...results, data]);
             }
             setProcessing(false);
         });

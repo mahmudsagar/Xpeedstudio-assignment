@@ -1,11 +1,7 @@
 import React, { useEffect, useState } from "react";
 import ScreenA from "./ScreenA/ScreenA";
-import ScreenB from "./ScreenB/ScreenB";
-import ShowInput from "./ShowInput/ShowInput";
 import socketIOClient from "socket.io-client";
-// import ProgressModal from "./ProgressModal/ProgressModal";
-import { useLocation } from "react-router";
-import { Button, Grid, Typography } from "@mui/material";
+import { Grid } from "@mui/material";
 
 const ENDPOINT = "http://localhost:5000";
 
@@ -19,7 +15,7 @@ const Home = () => {
         socket.on("connection", () => {
             console.log("Connected...");
 
-            fetch("http://localhost:5000/calculations")
+            fetch("https://dunamic-calculations.herokuapp.com/calculations")
                 .then((res) => res.json())
                 .then((data) => {
                     setResults(data.allResults);
@@ -27,9 +23,7 @@ const Home = () => {
         });
 
         socket.on("result", (data) => {
-            if (data.status === "ok") {
-                setResults((results) => [...results, data.result]);
-            }
+            setResults((results) => [...results, data])
             setProcessing(false);
         });
 
